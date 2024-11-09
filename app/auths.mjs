@@ -52,10 +52,10 @@ try{
 });
 
 authRouter.post("/login" , async (req,res) =>{
+
+   try{
     const {username} = req.body; //รับ input username จากฝั่ง client//
-
     const isValidUser = await connectionPool.query(`select * from users where username = $1`,[username]); //ดึงข้อมูล username จาก database//
-
     const user = isValidUser.rows[0]; //เอาผลลัพท์จากการดึงจากใน database มาเก็บไว้ในตัวแปร user
 
     // ตรวจ user ใส่ข้อมูลตรงหรือมีใน database ไหมถ้าไม่มีก็ response กลับไปว่าผิด//
@@ -78,20 +78,30 @@ authRouter.post("/login" , async (req,res) =>{
     }
 
     const token = jwt.sign(
-        { id: user._id},process.env.SECRET_KEY,{expiresIn:"15m",}
+        { id: user.user_id,username:user.username},process.env.SECRET_KEY,{expiresIn:"15m",}
       );
       
       return res.json({
           message: "login successfully >_<",token,
       });
+   }catch(err){
+    return res.status(500).json({
+        message:"Server could not login because database connection"
+    })
+   }
 });
 
 authRouter.post("/logout", [checkBlacklist],async (req,res) => {
+    try{
     const token = req.header.authorizations?.split(" ")[1];
     if (token){
         blacklist.add(token); //เอา token ที่ได้มาจากการ login เข้าไปไว้ใน blacklist
     }
-    res.status(200).json({message:"Logged out successfully"})
-})
+    res.status(200).json({message:"Logged out successfully"});
+    }catch(err){
+        console.log(err)
+        res.status(500).json({message:"Logged out fail"});
+    }
+});
 
 export default authRouter;
