@@ -20,7 +20,6 @@ export const protect = async (req,res,next) => {
         }
         
         req.user_id = payload.id;
-        req.user_id = payload.username;
         next();
     });
 }   

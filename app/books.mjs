@@ -17,6 +17,12 @@ authBook.post("/addBook" ,[protect], async (req,res) =>{
 
         console.log(newBook);
 
+        const ExistingBook = await connectionPool.query(`select * from books where title = $1 AND user_id = $2`,[newBook.title,newBook.user_id]);
+
+        if(ExistingBook.rows.length > 0){
+            return res.status(401).json({message: "You have already added this book."});
+        }
+
         await connectionPool.query(
 
             `INSERT INTO books(user_id,title,synosis,created_at,updated_at,published_year)
@@ -37,6 +43,58 @@ authBook.post("/addBook" ,[protect], async (req,res) =>{
     }catch(err){
         console.log(err);
         return res.status(500).json({message:"server couldn't create user because database issue"});
+    }
+});
+
+authBook.post("/addAuthor" , [protect], async (req,res) =>{
+
+    try{
+        const newAuthor = {
+            ...req.body,
+        };
+
+        await connectionPool.query(
+            `INSERT INTO authors(name) 
+             VALUES ($1) `,
+             [
+                newAuthor.name,
+             ]
+        );
+
+        return res.status(201).json({
+            message: "Author has insert <3"
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(401).json({
+            message: "Author add failed"
+        })
+    }
+});
+
+authBook.post("/addPublisher" , [protect], async (req,res) =>{
+
+    try{
+        const newPubisher = {
+            ...req.body,
+        };
+
+        await connectionPool.query(
+            `INSERT INTO publishers(name) 
+             VALUES ($1) `,
+             [
+                newPubisher.name,
+             ]
+        );
+
+        return res.status(201).json({
+            message: "Pubisher has insert <3"
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(401).json({
+            message: "Pubisher add failed"
+        })
     }
 });
 
