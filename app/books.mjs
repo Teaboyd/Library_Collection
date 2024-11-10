@@ -17,11 +17,17 @@ authBook.post("/addBook" ,[protect], async (req,res) =>{
 
         console.log(newBook);
 
-        const ExistingBook = await connectionPool.query(`select * from books where title = $1 AND user_id = $2`,[newBook.title,newBook.user_id]);
+        // เช็คว่า database มีหนังสือชื่อซ้ำไหม //
+        const ExistingBook = await connectionPool.query(
+            `SELECT * 
+             FROM books 
+             WHERE title = $1 AND user_id = $2`,
+             [newBook.title,newBook.user_id]);
 
+        // ถ้าเจอหนังสือชื่อซ้ำ ก็บอก user  ว่ามีหนังสือนี้อยู่แล้ว //
         if(ExistingBook.rows.length > 0){
             return res.status(401).json({message: "You have already added this book."});
-        }
+        };
 
         await connectionPool.query(
 

@@ -31,7 +31,7 @@ try{
 
 	//  query เพื่อ insert ข้อมูล ผ่าน connectionPool// //RETURNING user_id ช่วยให้ดึง user_id ของผู้ใช้ที่เพิ่งถูกเพิ่มลงในฐานข้อมูลได้//
 	await connectionPool.query(
-              `INSERT INTO users (username,password,email,create_at,updated_at,last_logged_in)
+        `INSERT INTO users (username,password,email,create_at,updated_at,last_logged_in)
 		values ($1,$2,$3,$4,$5,$6) RETURNING user_id`,
 		[
 			newUser.username,
@@ -55,7 +55,11 @@ authRouter.post("/login" , async (req,res) =>{
 
    try{
     const {username} = req.body; //รับ input username จากฝั่ง client//
-    const isValidUser = await connectionPool.query(`select * from users where username = $1`,[username]); //ดึงข้อมูล username จาก database//
+    const isValidUser = await connectionPool.query(
+        `SELECT * 
+         FROM users 
+         WHERE username = $1`,[username]); //ดึงข้อมูล username จาก database//
+         
     const user = isValidUser.rows[0]; //เอาผลลัพท์จากการดึงจากใน database มาเก็บไว้ในตัวแปร user
 
     // ตรวจ user ใส่ข้อมูลตรงหรือมีใน database ไหมถ้าไม่มีก็ response กลับไปว่าผิด//
