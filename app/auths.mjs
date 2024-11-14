@@ -54,12 +54,12 @@ try{
 authRouter.post("/login" , async (req,res) =>{
 
    try{
-    const {username} = req.body; //รับ input username จากฝั่ง client//
+    const {username} = req.body; //รับ input username จากฝั่ง client destruction ให้รับแค่ username//
     const isValidUser = await connectionPool.query(
         `SELECT * 
          FROM users 
          WHERE username = $1`,[username]); //ดึงข้อมูล username จาก database//
-         
+
     const user = isValidUser.rows[0]; //เอาผลลัพท์จากการดึงจากใน database มาเก็บไว้ในตัวแปร user
 
     // ตรวจ user ใส่ข้อมูลตรงหรือมีใน database ไหมถ้าไม่มีก็ response กลับไปว่าผิด//
@@ -82,7 +82,7 @@ authRouter.post("/login" , async (req,res) =>{
     }
 
     const token = jwt.sign(
-        { id: user.user_id,username:user.username},process.env.SECRET_KEY,{expiresIn:"15m",}
+        { id: user.user_id},process.env.SECRET_KEY,{expiresIn:"15m",}
       );
       
       return res.json({
