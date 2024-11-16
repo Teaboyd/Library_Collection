@@ -8,7 +8,6 @@ collectionRouter.get("/test",(req,res)=>{
     return res.json("Hello World,")
 });
 
-
 // สร้าง collection เป็นของตัวเอง //
 collectionRouter.post("/",[protect] , async (req,res)=>{
 
@@ -99,7 +98,7 @@ collectionRouter.post("/books",[protect],async(req,res)=>{
 });
 
 // get หนังสือที่อยู่ใน collection นั้น ๆ ฟิลแบบกดเข้าไปใน collection บลา ๆ  แล้วเจอหนังสือที่อยู่ใน collection นั้น ฟิลคล้าย playlist //
-collectionRouter.get("/collections" , [protect] , async (req,res) => {
+collectionRouter.get("/list" , [protect] , async (req,res) => {
 
     let result;
     const collection = req.query.name
@@ -127,10 +126,58 @@ collectionRouter.get("/collections" , [protect] , async (req,res) => {
     });
 
 // แก้ไขชื่อของ collection // 
-collectionRouter.put("/collections" , [protect] , async (req,res) => {
+collectionRouter.put("/:collectionsId" , [protect] , async (req,res) => { 
 
+    try{ 
+
+    const {collectionsId} = req.params;
+    const updateCollection = {...req.body , user_id: req.user_id,updated_at: new Date()};  
+
+    await connectionPool.query(
+        `
+        UPDATE collections
+        SET name = $2,
+            user_id = $3,
+            updated_at = $4
+        WHERE collection_id = $1
+        `,
+        [
+            collectionsId,
+            updateCollection.name,
+            updateCollection.user_id,
+            updateCollection.updated_at
+        ]
+    );
+
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            message: "server couldn't update collection because database issue"
+        });
+    };
+
+    return res.status(201).json({
+        message: "Collection has updated"
+    });
 });
 
+//ลบ collection // 
+collectionRouter.delete("/:collectionsId" , [protect] , async (req,res) =>{
+    try{
+        const {collectionsId} = req.params;
+        await connectionPool.query(`
+            delete from collections
+            where collection_id = $1
+            `,[collectionsId])
+    }catch(err){
+        return res.status(500).json({
+            message: "server couldn't delete collection because database issue"
+        })
+    };
+    return res.status(200).json({
+        message: "Delete Collection Successfully"
+    });
+});
 
 
 
