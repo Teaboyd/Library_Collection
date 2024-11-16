@@ -24,7 +24,7 @@ bookRouter.post("/" ,[protect], async (req,res) =>{
 
         // ถ้าเจอหนังสือชื่อซ้ำ ก็บอก user  ว่ามีหนังสือนี้อยู่แล้ว //
         if(ExistingBook.rows.length > 0){
-            return res.status(401).json({message: "You have already added this book."});
+            return res.status(400).json({message: "You have already added this book."});
         };
 
         
@@ -64,12 +64,12 @@ bookRouter.get("/",[protect], async( req,res) => {
     );
     }catch(err){
         console.log(err);
-        return res.status(401).json({
+        return res.status(500).json({
             message: "Server cannot read book because database issue"
         })
     }
 
-    return res.status(201).json({
+    return res.status(200).json({
         data: result.rows,
     })
 });
@@ -158,7 +158,7 @@ bookRouter.delete("/:bookId",[protect], async (req,res) =>{
         })
     }
 
-    return res.status(201).json({
+    return res.status(204).json({
         message: "Delete Books Successfully"
     });
 });

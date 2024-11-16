@@ -8,6 +8,5 @@ export const checkBlacklist = (req,res,next) => {
     if (blacklist.has(token)){
         return res.status(401).json({message: "Token has been logged out"});
     }
-    
     next();
 };

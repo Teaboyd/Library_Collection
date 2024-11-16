@@ -33,7 +33,7 @@ collectionRouter.post("/",[protect] , async (req,res)=>{
         );
     }catch(err){
         console.log(err)
-        return res.status(501).json({
+        return res.status(500).json({
             message: "server cannot create user profile because database issue"
         });
     };
@@ -56,12 +56,12 @@ collectionRouter.get("/", [protect] , async (req,res) => {
         )
     }catch(err){
         console.log(err);
-        return res.status(501).json({
+        return res.status(500).json({
             message: "server couldn't read collection because database issue"
         });
     };
 
-    return res.status(201).json({
+    return res.status(200).json({
         message: result.rows,
     })
 });
@@ -91,7 +91,7 @@ collectionRouter.post("/books",[protect],async(req,res)=>{
         );
     }catch(err){
         console.log(err)
-        return res.status(501).json({
+        return res.status(500).json({
             message: "server cannot create user profile because database issue"
         });
     };
@@ -126,7 +126,10 @@ collectionRouter.get("/collections" , [protect] , async (req,res) => {
         });
     });
 
+// แก้ไขชื่อของ collection // 
+collectionRouter.put("/collections" , [protect] , async (req,res) => {
 
+});
 
 
 

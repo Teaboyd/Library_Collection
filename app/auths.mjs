@@ -108,4 +108,6 @@ authRouter.post("/logout", [checkBlacklist],async (req,res) => {
     }
 });
 
+// อยากทำตัว retype-password เช็คว่าตรงกันไหม //
+
 export default authRouter;
