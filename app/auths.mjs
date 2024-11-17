@@ -5,6 +5,9 @@ import {ValidationCreateUser} from "../middlewares/user_validation.mjs"
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import { checkBlacklist } from "../middlewares/ิblacklist.mjs";
+import { protect } from "../middlewares/protect.mjs";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 const authRouter = Router();
@@ -108,6 +111,25 @@ authRouter.post("/logout", [checkBlacklist],async (req,res) => {
     }
 });
 
+authRouter.delete("/:userId" , [protect] , async (req,res) => {
+    
+    try{
+    const {userId} = req.params;
+    await connectionPool.query(
+        `DELETE FROM users
+         WHERE user_id = $1`,
+         [userId]
+    );
+    }catch(err){
+        return res.status(500).json({
+            message: "server couldn't delete user because database issue"
+        });
+    };
+
+    return res.status(200).json({
+        message: "delete user successfully"
+    });
+});
 // อยากทำตัว retype-password เช็คว่าตรงกันไหม //
 
 export default authRouter;

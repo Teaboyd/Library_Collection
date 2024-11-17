@@ -4,6 +4,8 @@ import bookRouter from "./app/books.mjs";
 import connectionPool from "./utils/db.mjs";
 import collectionRouter from "./app/collection.mjs";
 import profileRouter from "./app/profiles.mjs";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUi from "swagger-ui-express";
 
 async function init(){
     const app = express();
