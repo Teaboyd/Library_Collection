@@ -48,7 +48,7 @@ bookRouter.post("/" ,[protect], async (req,res) =>{
 
     }catch(err){
         console.log(err);
-        return res.status(500).json({message:"server couldn't create user because database issue"});
+        return res.status(500).json({message:"server couldn't add book information because database issue"});
     }
 
     return res.status(201).json({message:"Book has added !"});
@@ -149,7 +149,7 @@ bookRouter.put("/:bookId",[protect],async (req,res) =>{
     }catch(err){
         console.log(err)
         return res.status(500).json({
-            message: "server couldn't create user because database issue"
+            message: "server cannot update book information because database issue"
         })
     };
 
@@ -195,7 +195,7 @@ bookRouter.delete("/:bookId",[protect], async (req,res) =>{
     });
 });
 
-// เรียกดูหนังสือทั้งหมดจากชื่อคนแต่ง
+// เรียกดูหนังสือทั้งหมดจากชื่อคนแต่งและชื่อสำนักพิมพ์
 bookRouter.get("/myBook/list",[protect],async(req,res) => { 
 
     let results;
@@ -205,16 +205,16 @@ bookRouter.get("/myBook/list",[protect],async(req,res) => {
         results = await connectionPool.query(
             `SELECT title,synopsis,publisher,published_year,author
             FROM books
-            WHERE (author = $1 OR $1 is null OR $1 = ''
+            WHERE (author = $1 OR $1 is null OR $1 = '')
                    AND
-                   publisher = $2 OR $2 is null OR $2 = '')`,
+                   (publisher = $2 OR $2 is null OR $2 = '')`,
             [author,publisher]
         );
 
     }catch(err){
         console.log(err)
         return res.status(500).json({
-            message:"server couldn't create user because database issue"
+            message:`server cannot read book information from due to a database issue`
        });
     };
 
@@ -223,30 +223,6 @@ bookRouter.get("/myBook/list",[protect],async(req,res) => {
     });
 });
 
-// เรียกดูหนังสือทั้งหมดจากชื่อสำนักพิมพ์
-/*bookRouter.get("/info/publisher",[protect],async(req,res) => { 
-
-    let results;
-    const {publisher} = req.query
-    try{
-        results = await connectionPool.query(
-            `SELECT title,synopsis,author,published_year
-            FROM books
-            WHERE (publisher = $1 or $1 is null or $1 = '')`,
-            [publisher]
-        );
-
-    }catch(err){
-        console.log(err)
-        return res.status(500).json({
-            message:"server couldn't create user because database issue"
-       });
-    };
-
-    return res.status(200).json({
-        data: results.rows,
-    });
-});*/
 
 export default bookRouter;
 

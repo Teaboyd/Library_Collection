@@ -4,8 +4,7 @@ import bookRouter from "./app/books.mjs";
 import connectionPool from "./utils/db.mjs";
 import collectionRouter from "./app/collection.mjs";
 import profileRouter from "./app/profiles.mjs";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
+import cors from "cors";
 
 async function init(){
     const app = express();
@@ -14,6 +13,7 @@ async function init(){
     await connectionPool.connect();
 
     app.use(express.json());
+    app.use(cors());
     app.use("/auth",authRouter);
     app.use("/book",bookRouter);
     app.use("/collection",collectionRouter);

@@ -6,8 +6,6 @@ import bcrypt from "bcrypt";
 import dotenv from "dotenv";
 import { checkBlacklist } from "../middlewares/ิblacklist.mjs";
 import { protect } from "../middlewares/protect.mjs";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
 
 dotenv.config();
 const authRouter = Router();
@@ -194,9 +192,10 @@ authRouter.delete("/:userId" , [protect] , async (req,res) => {
     const {userId} = req.params;
 
     const isCheckUser = await connectionPool.query(
+
         `SELECT * 
          FROM users 
-         WHERE user_id = $1 RETURNING *`,
+         WHERE user_id = $1 `,
          [userId]);
 
          const userChecker = isCheckUser.rows[0];
@@ -213,6 +212,7 @@ authRouter.delete("/:userId" , [protect] , async (req,res) => {
          [userId]
     );
     }catch(err){
+        console.log(err)
         return res.status(500).json({
             message: "server couldn't delete user because database issue"
         });

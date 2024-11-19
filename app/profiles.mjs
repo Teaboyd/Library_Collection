@@ -9,13 +9,22 @@ const profileRouter = Router();
 profileRouter.post("/" ,[protect] , async (req,res) =>{
 
     try{
+
+    // เช็คว่าได้ใส่ข้อมูลมาครบหรือไม่//
+    const {first_name,last_name,gender,birth_day,profile_pic,address,phone_numbers}  = req.body;
+    if(!first_name || !last_name || !gender || !birth_day || !profile_pic || !address || !phone_numbers){
+        return res.status(400).json({
+            message: "Please Input Information Profile !"
+        });
+    };
+
+
     const newProfile = {
         ...req.body,
         user_id: req.user_id,
         created_at: new Date(),
         updated_at: new Date()  
     }
-    
 
     await connectionPool.query(
         `INSERT INTO users_profiles (user_id,first_name,last_name,gender,birth_day,profile_pic,address,phone_numbers,created_at,updated_at)
@@ -43,7 +52,7 @@ profileRouter.post("/" ,[protect] , async (req,res) =>{
     };
 
     return res.status(201).json({
-        message: "profile has added!"
+        message: "profile information has added!"
     });
 });
 
@@ -74,6 +83,19 @@ profileRouter.put("/:profileId" , [protect] , async (req,res) => {
 
     try{
         const {profileId} = req.params
+        const result = await connectionPool.query(
+            `SELECT *
+             FROM users_profiles
+             WHERE user_profile_id = $1`,
+             [profileId]
+        );
+    
+        if (result.rowCount === 0){
+            return res.status(404).json({
+                message: "Collection not found :)"
+            });
+        };
+
         const updateProfile = {
             ...req.body,
             user_id: req.user_id,
