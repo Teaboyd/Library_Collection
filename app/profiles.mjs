@@ -1,8 +1,7 @@
 import connectionPool from "../utils/db.mjs";
 import { Router } from "express";
 import { protect } from "../middlewares/protect.mjs";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
+
 
 const profileRouter = Router();
 

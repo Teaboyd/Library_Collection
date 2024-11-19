@@ -1,8 +1,6 @@
 import connectionPool from "../utils/db.mjs";
 import { Router } from "express";
 import { protect } from "../middlewares/protect.mjs";
-import swaggerJSDoc from "swagger-jsdoc";
-import swaggerUi from "swagger-ui-express";
 
 const bookRouter = Router();
 
@@ -81,28 +79,28 @@ bookRouter.get("/",[protect], async( req,res) => {
 // เรียกดูหนังสือเฉพาะเล่มจาก Id //
 bookRouter.get("/:bookId", [protect] , async(req,res)=>{
 
+    let result;
     try{
 
         const {bookId} = req.params;
-        const result = await connectionPool.query(
+        result = await connectionPool.query(
             `select * from books where book_id = $1`,[bookId]
         );
 
         if(!result.rows[0]){
             return res.status(404).json({
-                message: `Server cannot find a books(post id: ${bookId})`,
+                message: `Server cannot find a book :)`,
             });
         }
-
-        return res.status(200).json({
-            data: result.rows[0]
-        })
-
     }catch{
         return res.status(500).json({
             message:"server couldn't read books because database issue"
         })
     }
+
+    return res.status(200).json({
+        data: result.rows[0]
+    })
 });
 
 // แก้ไขรายระเอียดหนังสือ //
@@ -111,6 +109,19 @@ bookRouter.put("/:bookId",[protect],async (req,res) =>{
     try{
     const {bookId} = req.params;
     const updatedBook = {...req.body , user_id: req.user_id, updated_at: new Date()};
+
+    const result = await connectionPool.query(
+        `SELECT *
+         FROM books
+         WHERE book_id = $1`,
+         [bookId]
+    );
+
+    if (result.rowCount === 0){
+        return res.status(404).json({
+            message: "book not found"
+        });
+    };
 
     await connectionPool.query(
         `
@@ -153,6 +164,20 @@ bookRouter.delete("/:bookId",[protect], async (req,res) =>{
 
     try{
         const {bookId} = req.params;
+
+        const result = await connectionPool.query(
+            `SELECT *
+             FROM books
+             WHERE book_id = $1`,
+             [bookId]
+        );
+    
+        if (result.rowCount === 0){
+            return res.status(404).json({
+                message: "book not found"
+            });
+        };
+
         await connectionPool.query(
             `delete from books
             where book_id = $1`,
@@ -171,16 +196,19 @@ bookRouter.delete("/:bookId",[protect], async (req,res) =>{
 });
 
 // เรียกดูหนังสือทั้งหมดจากชื่อคนแต่ง
-bookRouter.get("/info/author",[protect],async(req,res) => { 
+bookRouter.get("/info/list",[protect],async(req,res) => { 
 
     let results;
-    const {author} = req.query
+    const {author,publisher} = req.query
+
     try{
         results = await connectionPool.query(
-            `SELECT title,synopsis,publisher,published_year
+            `SELECT title,synopsis,publisher,published_year,author
             FROM books
-            WHERE (author = $1 or $1 is null or $1 = '')`,
-            [author]
+            WHERE (author = $1 OR $1 is null OR $1 = ''
+                   AND
+                   publisher = $2 OR $2 is null OR $2 = '')`,
+            [author,publisher]
         );
 
     }catch(err){
@@ -196,7 +224,7 @@ bookRouter.get("/info/author",[protect],async(req,res) => {
 });
 
 // เรียกดูหนังสือทั้งหมดจากชื่อสำนักพิมพ์
-bookRouter.get("/info/publisher",[protect],async(req,res) => { 
+/*bookRouter.get("/info/publisher",[protect],async(req,res) => { 
 
     let results;
     const {publisher} = req.query
@@ -218,7 +246,7 @@ bookRouter.get("/info/publisher",[protect],async(req,res) => {
     return res.status(200).json({
         data: results.rows,
     });
-});
+});*/
 
 export default bookRouter;
 

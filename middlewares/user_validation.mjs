@@ -26,7 +26,7 @@ export const ValidationCreateUser = (req,res,next) => {
 
 	if (!isValidEmail(req.body.email)){
         return res.status(400).json({
-            message: "กรุณากรอก Email ให้ถูกต้อง"
+            message: "Please enter a valid email address !"
         	})
     	}
 

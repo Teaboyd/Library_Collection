@@ -13,7 +13,7 @@ dotenv.config();
 const authRouter = Router();
 export const blacklist = new Set(); //เก็บ token ไว้ใน blacklist
 
-
+// ผู้ใช้สามารถสมัครสมาชิกได้ //
 authRouter.post("/register" ,[ValidationCreateUser], async (req,res) =>{
 
 try{	
@@ -54,10 +54,11 @@ try{
     };
 });
 
+// ผู้ใช้สามารถเข้าสู่ระบบได้ //
 authRouter.post("/login" , async (req,res) =>{
 
    try{
-    const {username} = req.body; //รับ input username จากฝั่ง client destruction ให้รับแค่ username//
+    const {username} = req.body; //รับ input เฉพาะ username จากฝั่ง client destruction ให้รับแค่ username// 
     const isValidUser = await connectionPool.query(
         `SELECT * 
          FROM users 
@@ -98,6 +99,81 @@ authRouter.post("/login" , async (req,res) =>{
    }
 });
 
+// ผู้ใช้สามารถเปลี่ยนรหัสผ่านได้ //
+authRouter.put("/:passId" , [protect] , async (req,res) => {
+
+    try{
+    // เลือกดึงข้อมูลเฉพาะ รหัสผ่านเก่า กับ รหัสผ่านใหม่จาก user //
+    const {currentPassword , newPassword}  = req.body 
+    const {passId} = req.params
+
+    // เช็คว่าได้กรอก รหัสผ่านเก่าและรหัสผ่านใหม่เข้ามาไหม // 
+    if(!currentPassword || !newPassword){
+        return res.status(400).json({
+            message: "Please Input currentPassword and newPassword"
+        });
+    };
+
+    // ดึงข้อมูลรหัส ผ่าน user_id ที่ตรงกับ passId จาก database  //
+    const result = await connectionPool.query(
+        `SELECT password
+         FROM users 
+         WHERE user_id = $1`,
+         [passId]
+    );
+
+
+    // check ว่ามี user ที่ user req มาไหม ถ้าไม่มีส่ง err กลับว่า ไม่เจอ //
+    if (result.rowsCount === 0){
+        return res.status(404).json({
+            message: "user not found"
+        });
+    };
+
+    // เก็บผลลัพท์ไว้ใน user //
+    const user = result.rows[0];
+
+    // เช็คว่า password เก่ากับ password ที่เคยกรอกไว้ครั้งก่อนตรงกันไหม ถ้าไม่ก็ไม่ให้เปลี่ยนและส่ง err ว่า password ไม่ตรงกัน //
+    // ** ใช้ bcrypt compare เพื่อแปลงเปรียบเทียบ ** /
+    const isValidPassword = await bcrypt.compare(currentPassword,user.password);
+    console.log(isValidPassword)
+    if (!isValidPassword){
+        return res.status(400).json({
+            message: "Password doesn't match"
+        });
+    };
+
+    //gen password ใหม่ //
+	const salt = await bcrypt.genSalt(10);
+	const hashedPassword = await bcrypt.hash(newPassword,salt);
+
+    await connectionPool.query(
+        `
+        UPDATE users
+        SET password = $2,
+            updated_at = $3
+        WHERE user_id = $1
+        `,
+        [
+            passId,
+            hashedPassword,
+            new Date(),
+        ]
+    );
+    }catch(err){
+        console.log(err)
+        return res.status(500).json({
+            message: "Server cannot update password because database issue"
+        });
+    };
+
+    return res.status(200).json({
+        message: "Password is updated"
+    });
+
+});
+
+// ผู้ใช้สามารถออกจากระบบได้ //
 authRouter.post("/logout", [checkBlacklist],async (req,res) => {
     try{
     const token = req.header.authorizations?.split(" ")[1];
@@ -107,14 +183,30 @@ authRouter.post("/logout", [checkBlacklist],async (req,res) => {
     res.status(200).json({message:"Logged out successfully"});
     }catch(err){
         console.log(err)
-        res.status(500).json({message:"Logged out fail"});
+        res.status(500).json({message:"Logout failed. Please try again later."});
     }
 });
 
+// ผู้ใช้สามารถลบบัญชีของตนได้ //
 authRouter.delete("/:userId" , [protect] , async (req,res) => {
     
     try{
     const {userId} = req.params;
+
+    const isCheckUser = await connectionPool.query(
+        `SELECT * 
+         FROM users 
+         WHERE user_id = $1 RETURNING *`,
+         [userId]);
+
+         const userChecker = isCheckUser.rows[0];
+
+         if(!userChecker){
+            return res.status(404).json({
+                message: "User not found"
+            })
+        };
+
     await connectionPool.query(
         `DELETE FROM users
          WHERE user_id = $1`,
@@ -130,6 +222,5 @@ authRouter.delete("/:userId" , [protect] , async (req,res) => {
         message: "delete user successfully"
     });
 });
-// อยากทำตัว retype-password เช็คว่าตรงกันไหม //
 
 export default authRouter;
