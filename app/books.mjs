@@ -55,7 +55,7 @@ bookRouter.post("/" ,[protect], async (req,res) =>{
 });
 
 // เรียกดูหนังสือทั้งหมด //
-bookRouter.get("/",[protect], async( req,res) => {
+bookRouter.get("/mybook",[protect], async( req,res) => {
 
     let result;
     try{
