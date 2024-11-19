@@ -89,7 +89,7 @@ bookRouter.get("/:bookId", [protect] , async(req,res)=>{
 
         if(!result.rows[0]){
             return res.status(404).json({
-                message: `Server cannot find a book :)`,
+                message: `Book not found :)`,
             });
         }
     }catch{
@@ -119,7 +119,7 @@ bookRouter.put("/:bookId",[protect],async (req,res) =>{
 
     if (result.rowCount === 0){
         return res.status(404).json({
-            message: "book not found"
+            message: "book not found :)"
         });
     };
 
