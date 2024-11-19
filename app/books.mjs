@@ -196,7 +196,7 @@ bookRouter.delete("/:bookId",[protect], async (req,res) =>{
 });
 
 // เรียกดูหนังสือทั้งหมดจากชื่อคนแต่ง
-bookRouter.get("/info/list",[protect],async(req,res) => { 
+bookRouter.get("/myBook/list",[protect],async(req,res) => { 
 
     let results;
     const {author,publisher} = req.query
